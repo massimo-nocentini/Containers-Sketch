@@ -19,20 +19,34 @@ CTSketch class >> onCollection: aCollection epsilon: e [
 { #category : #'instance creation' }
 CTSketch class >> onCollection: aCollection kMin: k [
 
-	| sketch rankings random |
+	| sketch rankings random shuffling size |
 	random := Random seed: 11.
-
+	shuffling := aCollection asArray copy.
+	size := aCollection size.
 	sketch := self new.
 
-	rankings := (1 to: k) collect: [ :i | Dictionary new ].
-
-	aCollection withIndexDo: [ :each :size | 
-		rankings do: [ :rank | 
-			rank at: each put: (random nextInteger: size) reciprocal ] ].
+	rankings := (1 to: k) collect: [ :i | 
+		            | rank |
+		            rank := Dictionary new.
+		            (shuffling shuffleBy: random) withIndexDo: [ :each :index | 
+			            rank at: each put: index / size ].
+		            rank ].
 
 	^ sketch
 		  rankings: rankings;
 		  yourself
+]
+
+{ #category : #private }
+CTSketch >> asSet [
+
+	^ Set withAll: sketch
+]
+
+{ #category : #private }
+CTSketch >> epsilon [
+
+	^ (rankings first size ln / self k) sqrt
 ]
 
 { #category : #accessing }
