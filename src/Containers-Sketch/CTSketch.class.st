@@ -19,11 +19,10 @@ CTSketch class >> onCollection: aCollection epsilon: e [
 { #category : #'instance creation' }
 CTSketch class >> onCollection: aCollection kMin: k [
 
-	| sketch rankings random shuffling size |
+	| rankings random shuffling size |
 	random := Random seed: 11.
 	shuffling := aCollection asArray copy.
 	size := aCollection size.
-	sketch := self new.
 
 	rankings := (1 to: k) collect: [ :i | 
 		            | rank |
@@ -32,7 +31,7 @@ CTSketch class >> onCollection: aCollection kMin: k [
 			            rank at: each put: index / size ].
 		            rank ].
 
-	^ sketch
+	^ self new
 		  rankings: rankings;
 		  yourself
 ]
@@ -49,10 +48,24 @@ CTSketch >> epsilon [
 	^ (rankings first size ln / self k) sqrt
 ]
 
+{ #category : #'as yet unclassified' }
+CTSketch >> instVarsNamesOrderedCollection [
+
+	^ #( rank ) , super instVarsNamesOrderedCollection
+	  , #( k size epsilon )
+]
+
 { #category : #accessing }
 CTSketch >> k [
 
 	^ rankings size
+]
+
+{ #category : #'as yet unclassified' }
+CTSketch >> rank [
+
+	^ sketch collect: [ :each | 
+		  each -> (rankings collect: [ :rank | rank at: each ]) ]
 ]
 
 { #category : #accessing }
