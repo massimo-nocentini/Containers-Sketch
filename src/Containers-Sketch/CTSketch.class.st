@@ -42,6 +42,12 @@ CTSketch >> asSet [
 	^ Set withAll: sketch
 ]
 
+{ #category : #accessing }
+CTSketch >> createSketch [
+
+	sketch := Array new: self k
+]
+
 { #category : #private }
 CTSketch >> epsilon [
 
@@ -73,7 +79,7 @@ CTSketch >> rankings: anObject [
 
 	rankings := anObject.
 
-	sketch := Array new: self k
+	self createSketch
 ]
 
 { #category : #accessing }
