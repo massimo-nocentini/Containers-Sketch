@@ -9,6 +9,16 @@ Class {
 }
 
 { #category : #'instance creation' }
+CTBottomKSketch class >> k: k weightBlock: wBlock [
+
+	^ self new
+		  random: (RandomExponential seed: 11);
+		  weightBlock: wBlock;
+		  rankings: (Array new: k);
+		  yourself
+]
+
+{ #category : #'instance creation' }
 CTBottomKSketch class >> onCollection: aCollection kMin: k [
 
 	| rank size |
@@ -50,7 +60,9 @@ CTBottomKSketch class >> onCollection: aCollection kMin: k weightBlock: wBlock [
 { #category : #accessing }
 CTBottomKSketch >> createSketch [
 
-	sketch := SortedCollection sortUsing: [ :a :b | a first < b first ]
+	sketch := (SortedCollection new: self k)
+		          sortBlock: [ :a :b | a first < b first ];
+		          yourself
 ]
 
 { #category : #updating }
@@ -82,22 +94,30 @@ CTBottomKSketch >> rank [
 { #category : #updating }
 CTBottomKSketch >> size [
 
-	| k |
-	k := self k min: sketch size.
-	^ (k - 1 / (sketch at: k) first) ceiling
+	| r |
+	r := sketch last first.
+
+	^ (sketch collect: [ :each | 
+		   | w |
+		   w := each second.
+		   w / (1 - (w * r) negated exp) ]) sum ceiling
 ]
 
 { #category : #updating }
 CTBottomKSketch >> update: u [
 
-	rankings first at: u ifPresent: [ :rank | 
-		| tuple k |
-		k := self k.
+	| rank k w |
+	k := self k.
+	w := wBlock value: u.
+	rank := random
+		        lambda: w;
+		        next.
 
-		tuple := Array with: rank with: (wBlock value: u) with: u.
-
-		(sketch size < k or: [ rank < (sketch at: k) first ]) ifTrue: [ 
-			sketch add: tuple ] ]
+	(sketch size < k or: [ rank < sketch lastButOne first ]) ifTrue: [ 
+		| tuple |
+		tuple := Array with: rank with: w with: u.
+		sketch add: tuple.
+		k + 1 < sketch size ifTrue: [ sketch removeLast ] ]
 ]
 
 { #category : #'as yet unclassified' }

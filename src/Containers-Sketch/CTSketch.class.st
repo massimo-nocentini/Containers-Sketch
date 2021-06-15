@@ -58,7 +58,7 @@ CTSketch >> epsilon [
 CTSketch >> instVarsNamesOrderedCollection [
 
 	^ #( rank ) , super instVarsNamesOrderedCollection
-	  , #( k size epsilon )
+	  , #( k size  )
 ]
 
 { #category : #accessing }
