@@ -14,7 +14,7 @@ CTBottomKSketch class >> k: k weightBlock: wBlock [
 	^ self new
 		  random: (RandomExponential seed: 11);
 		  weightBlock: wBlock;
-		  rankings: (Array new: k);
+		  rankings: (1 to: k);
 		  yourself
 ]
 
@@ -60,9 +60,7 @@ CTBottomKSketch class >> onCollection: aCollection kMin: k weightBlock: wBlock [
 { #category : #accessing }
 CTBottomKSketch >> createSketch [
 
-	sketch := (SortedCollection new: self k)
-		          sortBlock: [ :a :b | a first < b first ];
-		          yourself
+	sketch := SortedCollection sortUsing: [ :a :b | a first < b first ]
 ]
 
 { #category : #updating }
@@ -101,6 +99,41 @@ CTBottomKSketch >> size [
 		   | w |
 		   w := each second.
 		   w / (1 - (w * r) negated exp) ]) sum ceiling
+]
+
+{ #category : #updating }
+CTBottomKSketch >> sizeMaximumLikelihood [
+
+	| r cumulatedWeights process start stop middle |
+	self flag: 'To fix'.
+
+	r := sketch last first.
+
+	cumulatedWeights := ((sketch collect: [ :each | each second ])
+		                     scan: [ :acc :w | acc + w ]
+		                     init: 0)
+		                    removeLast;
+		                    yourself.
+
+	process := [ :x | 
+	           cumulatedWeights
+		           inject: 0
+		           into: [ :s :w | s + (x - w) reciprocal ] ].
+
+	start := cumulatedWeights last + (1 / r).
+	stop := cumulatedWeights last + (self k + 1 / r).
+
+	[ 
+	| v |
+	middle := stop - start / 2.
+	v := process value: middle.
+
+	((v closeTo: r) or: [ middle closeTo: 0 ])
+		ifTrue: [ ^ middle ceiling ]
+		ifFalse: [ 
+			v > r
+				ifTrue: [ stop := middle ]
+				ifFalse: [ start := middle ] ] ] repeat
 ]
 
 { #category : #updating }
