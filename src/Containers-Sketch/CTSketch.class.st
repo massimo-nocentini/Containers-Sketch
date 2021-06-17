@@ -3,36 +3,20 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'sketch',
-		'rankings'
+		'rankings',
+		'random',
+		'wBlock'
 	],
 	#category : #'Containers-Sketch'
 }
 
 { #category : #'instance creation' }
-CTSketch class >> onCollection: aCollection epsilon: e [
-
-	^ self
-		  onCollection: aCollection
-		  kMin: (aCollection size ln / e squared) ceiling
-]
-
-{ #category : #'instance creation' }
-CTSketch class >> onCollection: aCollection kMin: k [
-
-	| rankings random shuffling size |
-	random := Random seed: 11.
-	shuffling := aCollection asArray copy.
-	size := aCollection size.
-
-	rankings := (1 to: k) collect: [ :i | 
-		            | rank |
-		            rank := Dictionary new.
-		            (shuffling shuffleBy: random) withIndexDo: [ :each :index | 
-			            rank at: each put: index / size ].
-		            rank ].
+CTSketch class >> k: k weightBlock: wBlock [
 
 	^ self new
-		  rankings: rankings;
+		  random: (RandomExponential seed: 11);
+		  weightBlock: wBlock;
+		  rankings: (1 to: k);
 		  yourself
 ]
 
@@ -45,13 +29,14 @@ CTSketch >> asSet [
 { #category : #accessing }
 CTSketch >> createSketch [
 
-	sketch := Array new: self k
+	sketch := (1 to: self k) collect: [ :each | 
+		          Array with: Float infinity with: nil with: nil ]
 ]
 
 { #category : #private }
-CTSketch >> epsilon [
+CTSketch >> epsilon: universeSize [
 
-	^ (rankings first size ln / self k) sqrt
+	^ (universeSize ln / self k) sqrt
 ]
 
 { #category : #'as yet unclassified' }
@@ -65,6 +50,12 @@ CTSketch >> instVarsNamesOrderedCollection [
 CTSketch >> k [
 
 	^ rankings size
+]
+
+{ #category : #accessing }
+CTSketch >> random: anObject [
+
+	random := anObject
 ]
 
 { #category : #'as yet unclassified' }
@@ -85,15 +76,7 @@ CTSketch >> rankings: anObject [
 { #category : #accessing }
 CTSketch >> size [
 
-	| sum |
-	sum := 0.
-	sketch
-		with: rankings
-		do: [ :a :rank | sum := sum + (rank at: a ifAbsent: [ 0 ]) ].
-
-	^ sum isZero
-		  ifTrue: [ 0 ]
-		  ifFalse: [ (self k / sum - 1) ceiling ]
+	^ self weightEstimation ceiling
 ]
 
 { #category : #accessing }
@@ -105,12 +88,31 @@ CTSketch >> sketch [
 { #category : #updating }
 CTSketch >> update: u [
 
-	1 to: self k do: [ :i | 
-		| a rank |
-		a := sketch at: i.
-		rank := rankings at: i.
+	| w |
+	w := wBlock value: u.
+	random lambda: w.
 
-		(rank at: a ifAbsent: [ Float infinity ])
-		> (rank at: u ifAbsent: [ Float infinity ]) ifTrue: [ 
-			sketch at: i put: u ] ]
+	sketch do: [ :each | 
+		| rank |
+		rank := random next.
+
+		rank < each first ifTrue: [ 
+			each
+				at: 1 put: rank;
+				at: 2 put: w;
+				at: 3 put: u ] ]
+]
+
+{ #category : #'as yet unclassified' }
+CTSketch >> weightBlock: aBlock [
+
+	wBlock := aBlock
+]
+
+{ #category : #accessing }
+CTSketch >> weightEstimation [
+
+	| ranksSum |
+	ranksSum := sketch inject: 0 into: [ :sum :each | sum + each first ].
+	^ self k - 1 / ranksSum
 ]
