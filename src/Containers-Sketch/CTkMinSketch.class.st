@@ -1,5 +1,5 @@
 Class {
-	#name : #CTSketch,
+	#name : #CTkMinSketch,
 	#superclass : #Object,
 	#instVars : [
 		'sketch',
@@ -11,7 +11,7 @@ Class {
 }
 
 { #category : #'instance creation' }
-CTSketch class >> k: k weightBlock: wBlock [
+CTkMinSketch class >> k: k weightBlock: wBlock [
 
 	^ self new
 		  random: (RandomExponential seed: 11);
@@ -21,52 +21,44 @@ CTSketch class >> k: k weightBlock: wBlock [
 ]
 
 { #category : #private }
-CTSketch >> asSet [
+CTkMinSketch >> asSet [
 
 	^ Set withAll: sketch
 ]
 
 { #category : #accessing }
-CTSketch >> createSketch [
+CTkMinSketch >> createSketch [
 
 	sketch := (1 to: self k) collect: [ :each | 
 		          Array with: Float infinity with: nil with: nil ]
 ]
 
 { #category : #private }
-CTSketch >> epsilon: universeSize [
+CTkMinSketch >> epsilon: universeSize [
 
 	^ (universeSize ln / self k) sqrt
 ]
 
 { #category : #'as yet unclassified' }
-CTSketch >> instVarsNamesOrderedCollection [
+CTkMinSketch >> instVarsNamesOrderedCollection [
 
-	^ #( rank ) , super instVarsNamesOrderedCollection
-	  , #( k size  )
+	^ super instVarsNamesOrderedCollection , #( k size )
 ]
 
 { #category : #accessing }
-CTSketch >> k [
+CTkMinSketch >> k [
 
 	^ rankings size
 ]
 
 { #category : #accessing }
-CTSketch >> random: anObject [
+CTkMinSketch >> random: anObject [
 
 	random := anObject
 ]
 
-{ #category : #'as yet unclassified' }
-CTSketch >> rank [
-
-	^ sketch collect: [ :each | 
-		  each -> (rankings collect: [ :rank | rank at: each ]) ]
-]
-
 { #category : #accessing }
-CTSketch >> rankings: anObject [
+CTkMinSketch >> rankings: anObject [
 
 	rankings := anObject.
 
@@ -74,19 +66,19 @@ CTSketch >> rankings: anObject [
 ]
 
 { #category : #accessing }
-CTSketch >> size [
+CTkMinSketch >> size [
 
 	^ self weightEstimation ceiling
 ]
 
 { #category : #accessing }
-CTSketch >> sketch [
+CTkMinSketch >> sketch [
 
 	^ sketch copy
 ]
 
 { #category : #updating }
-CTSketch >> update: u [
+CTkMinSketch >> update: u [
 
 	| w |
 	w := wBlock value: u.
@@ -104,13 +96,13 @@ CTSketch >> update: u [
 ]
 
 { #category : #'as yet unclassified' }
-CTSketch >> weightBlock: aBlock [
+CTkMinSketch >> weightBlock: aBlock [
 
 	wBlock := aBlock
 ]
 
 { #category : #accessing }
-CTSketch >> weightEstimation [
+CTkMinSketch >> weightEstimation [
 
 	| ranksSum |
 	ranksSum := sketch inject: 0 into: [ :sum :each | sum + each first ].

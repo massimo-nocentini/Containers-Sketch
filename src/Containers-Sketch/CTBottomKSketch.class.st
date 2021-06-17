@@ -1,6 +1,6 @@
 Class {
 	#name : #CTBottomKSketch,
-	#superclass : #CTSketch,
+	#superclass : #CTkMinSketch,
 	#category : #'Containers-Sketch'
 }
 
@@ -22,12 +22,6 @@ CTBottomKSketch >> random [
 	^ random
 		  lambda: sum;
 		  yourself
-]
-
-{ #category : #accessing }
-CTBottomKSketch >> rank [
-
-	^ sketch asArray copyFrom: 1 to: self k
 ]
 
 { #category : #updating }
@@ -63,6 +57,12 @@ CTBottomKSketch >> sizeMaximumLikelihood [
 			v > r
 				ifTrue: [ stop := middle ]
 				ifFalse: [ start := middle ] ] ] repeat
+]
+
+{ #category : #accessing }
+CTBottomKSketch >> sketch [
+
+	^ sketch copyFrom: 1 to: self k
 ]
 
 { #category : #updating }
